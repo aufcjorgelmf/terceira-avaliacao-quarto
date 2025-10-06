@@ -1,0 +1,100 @@
+/* ===================== ABNT – HTML/CSS (Quarto) ===================== */
+
+/* Página A4 com margens 3 cm (suporte em navegadores modernos e Quarto preview) */
+@page {
+  size: A4;
+  margin: 3cm;
+}
+
+/* Tipografia geral */
+html {
+  /* Habilita hifenização no HTML quando o idioma está pt-BR */
+  hyphens: auto;
+}
+
+body {
+  font-family: "Times New Roman", serif;
+  font-size: 12pt;          /* ABNT: 12pt no corpo do texto */
+  line-height: 1.5;         /* Espaçamento 1,5 entre linhas */
+  color: #222;
+  /* Backup para motores que não respeitam @page */
+  margin: 3cm;              /* Mantém 3 cm mesmo fora do modo de página */
+}
+
+/* Parágrafos: justificados e com recuo de 1,25 cm na 1ª linha */
+p {
+  text-align: justify;
+  text-indent: 1.25cm;      /* Recuo 1ª linha */
+  margin: 0 0 0.6em 0;      /* Espaço entre parágrafos (discreto, ABNT usa recuo como separação) */
+  text-justify: inter-word; /* Justificação uniforme */
+  hyphens: auto;            /* Hifenização automática */
+}
+
+/* Títulos: alinhados à esquerda, em negrito, mantendo hierarquia visual */
+h1, h2, h3, h4, h5, h6 {
+  font-family: "Times New Roman", serif;
+  font-weight: bold;
+  color: #111;
+  text-align: left;
+  line-height: 1.2;
+  margin-top: 1.5em;
+  margin-bottom: 0.7em;
+  text-transform: none;     /* ABNT geralmente não exige caixa alta nos títulos principais */
+}
+
+/* Sumário (toc) – mantém tipografia coerente */
+nav[role="doc-toc"], .toc, .quarto-toc {
+  font-family: "Times New Roman", serif;
+  font-size: 11pt;
+  line-height: 1.4;
+}
+
+/* Figuras centralizadas e legendas elegíveis */
+figure, img {
+  display: block;
+  margin: auto;
+  text-align: center;
+  max-width: 100%;
+}
+
+figcaption {
+  font-size: 11pt;
+  text-align: center;
+  margin-top: 0.3em;
+}
+
+/* Tabelas com borda simples e tipografia padrão */
+table {
+  border-collapse: collapse;
+  width: 100%;
+  margin: 0.8em 0;
+  font-family: "Times New Roman", serif;
+  font-size: 11pt;
+}
+
+th, td {
+  border: 1px solid #999;
+  padding: 6pt 8pt;
+  text-align: center;
+}
+
+/* Código e saídas – mantendo legibilidade sem “gritar” visualmente */
+pre, code, pre code {
+  font-family: "Consolas", "Courier New", monospace;
+  font-size: 10pt;
+  background: #f6f6f6;
+  border-radius: 6px;
+  padding: 8px 10px;
+  overflow-x: auto;
+}
+
+/* Listas – mantém alinhamento e recuo padrão */
+ul, ol {
+  margin: 0 0 0.8em 1.25cm; /* recuo harmonizado com o recuo de parágrafo */
+}
+
+/* Rodapé e notas (se houver) */
+footer, .footnotes {
+  font-size: 10pt;
+  line-height: 1.3;
+}
