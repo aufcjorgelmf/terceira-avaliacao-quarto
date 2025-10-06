@@ -1,0 +1,22 @@
+name: py-curso-avancado
+channels:
+  - conda-forge
+dependencies:
+  - python=3.11
+  - jupyterlab
+  - numpy
+  - pandas
+  - matplotlib
+  - seaborn
+  - plotnine
+  - scikit-learn
+  - scipy
+  - statsmodels
+  - networkx
+  - numba
+  - geopandas
+  - shapely
+  - pyproj
+  - pip
+  - pip:
+      - geobr

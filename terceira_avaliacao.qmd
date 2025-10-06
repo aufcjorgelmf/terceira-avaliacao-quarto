@@ -1,0 +1,206 @@
+---
+title: "Terceira Avaliação - Introdução aos Softwares Estatísticos"
+author: "Auditor Virtuoso"
+date: "2025-09-26"
+format:
+  html:
+    toc: true
+    toc-location: left
+    code-fold: show
+    number-sections: true
+    df-print: paged
+execute:
+  echo: true
+  warning: false
+  message: false
+---
+
+```{python}
+#| label: setup
+#| echo: false
+import importlib, sys, subprocess
+
+def ensure(pkg, import_name=None, extra=None):
+    name = import_name or pkg
+    try:
+        importlib.import_module(name)
+    except ImportError:
+        cmd = [sys.executable, "-m", "pip", "install", pkg] + (extra or [])
+        print(f"Instalando {pkg} ...")
+        subprocess.check_call(cmd)
+
+ensure("numpy"); ensure("pandas"); ensure("matplotlib"); ensure("seaborn")
+ensure("plotnine"); ensure("numba")
+ensure("geopandas"); ensure("shapely"); ensure("pyproj"); ensure("geobr")
+print("Ambiente pronto.")
+```
+
+# 1. Introdução
+Este trabalho explora visualização com `matplotlib` e `plotnine`, e aceleração com `numba`, incluindo mapas globais e da Paraíba (`geopandas`/`geobr`).
+
+# 2. Parte 1 — Plotagem em Python
+## 2.1 Dados
+```{python}
+import numpy as np, pandas as pd, seaborn as sns
+rng = np.random.default_rng(42)
+iris = sns.load_dataset("iris")
+categorias = ["A","B","C","D"]; valores = rng.integers(10,60,size=4)
+meses = ["Jan","Fev","Mar","Abr","Mai"]
+g1 = rng.integers(20,50,size=5); g2 = rng.integers(15,45,size=5); g3 = rng.integers(10,40,size=5)
+x = np.linspace(0,10,200); y = np.sin(x) + 0.2*rng.standard_normal(200)
+df_linha = pd.DataFrame({"x":x,"y":y})
+```
+
+## 2.2 Barras: simples, agrupadas, empilhadas
+```{python}
+import matplotlib.pyplot as plt, numpy as np
+fig, ax = plt.subplots(figsize=(7,4))
+ax.bar(categorias, valores); ax.set_title("Barras Simples"); plt.show()
+
+x_idx = np.arange(len(meses)); w = 0.25
+fig, ax = plt.subplots(figsize=(8,4))
+ax.bar(x_idx-w, g1, w, label="G1"); ax.bar(x_idx, g2, w, label="G2"); ax.bar(x_idx+w, g3, w, label="G3")
+ax.set_xticks(x_idx, labels=meses); ax.legend(); ax.set_title("Barras Agrupadas"); plt.show()
+
+fig, ax = plt.subplots(figsize=(7,4))
+ax.bar(meses, g1, label="G1"); ax.bar(meses, g2, bottom=g1, label="G2"); ax.bar(meses, g3, bottom=g1+g2, label="G3")
+ax.legend(); ax.set_title("Barras Empilhadas"); plt.show()
+```
+
+## 2.3 Boxplot e Histograma
+```{python}
+fig, axes = plt.subplots(1,2, figsize=(10,4))
+axes[0].boxplot([iris[iris.species=="setosa"]["sepal_length"],
+                 iris[iris.species=="versicolor"]["sepal_length"],
+                 iris[iris.species=="virginica"]["sepal_length"]], labels=["setosa","versicolor","virginica"])
+axes[0].set_title("Boxplot: Sepal Length por Espécie")
+axes[1].hist(iris["petal_length"], bins=20, edgecolor="black"); axes[1].set_title("Histograma: Petal Length")
+plt.tight_layout(); plt.show()
+```
+
+## 2.4 Pizza
+```{python}
+fig, ax = plt.subplots(figsize=(6,6))
+ax.pie(valores, labels=categorias, autopct="%1.1f%%", startangle=90)
+ax.set_title("Participação por Categoria"); plt.show()
+```
+
+## 2.5 Linha, Área, Twin y, Log, Erro
+```{python}
+fig, ax = plt.subplots(figsize=(8,4)); ax.plot(df_linha["x"], df_linha["y"]); ax.set_title("Série (linha)"); plt.show()
+
+fig, ax = plt.subplots(figsize=(8,4)); ax.plot(df_linha["x"], df_linha["y"]); ax.fill_between(df_linha["x"],0,df_linha["y"],alpha=0.3); ax.set_title("Área"); plt.show()
+
+media = np.array([20,30,25,35,28]); erro = np.array([2,3,2,4,3]); serie = np.cumsum(np.random.normal(0,1,5))+100
+fig, ax1 = plt.subplots(figsize=(8,4)); ax1.bar(meses, media, yerr=erro, capsize=4, label="Média"); ax1.set_title("Barras+Linha (twin)")
+ax2 = ax1.twinx(); ax2.plot(meses, serie, marker="o", label="Série"); plt.show()
+
+xv = np.arange(1,10); yv = 10**xv
+fig, ax = plt.subplots(figsize=(7,4)); ax.plot(xv,yv, marker="o"); ax.set_yscale("log"); ax.set_title("Escala Log"); plt.show()
+```
+
+## 2.6 Subplots (2x3)
+```{python}
+fig, axes = plt.subplots(2,3, figsize=(12,6))
+axes[0,0].scatter(iris["sepal_length"], iris["sepal_width"]); axes[0,0].set_title("Scatter")
+axes[0,1].hist(iris["petal_length"], bins=15, edgecolor="black"); axes[0,1].set_title("Histograma")
+axes[0,2].boxplot([iris["sepal_length"], iris["petal_length"]], labels=["Sepal L.","Petal L."]); axes[0,2].set_title("Boxplot")
+axes[1,0].plot(df_linha["x"], df_linha["y"]); axes[1,0].set_title("Linha")
+axes[1,1].bar(categorias, valores); axes[1,1].set_title("Barras")
+axes[1,2].text(0.5,0.5,"Espaço p/ gráfico", ha="center"); axes[1,2].set_axis_off()
+plt.tight_layout(); plt.show()
+```
+
+## 2.7 Plotnine (contraste)
+```{python}
+from plotnine import ggplot, aes, geom_point, geom_line, labs, theme_minimal
+(ggplot(iris, aes("sepal_length","sepal_width", color="species")) + geom_point() + labs(title="Iris (plotnine)") + theme_minimal())
+```
+```{python}
+(ggplot(df_linha, aes("x","y")) + geom_line() + labs(title="Linha (plotnine)") + theme_minimal())
+```
+
+## 2.8 Geo — Global / América do Sul
+```{python}
+import geopandas as gpd, matplotlib.pyplot as plt
+from shapely.geometry import Point
+
+world = gpd.read_file(gpd.datasets.get_path("naturalearth_lowres"))
+brasilia = gpd.GeoDataFrame({"nome":["Brasília"]}, geometry=[Point(-47.8825,-15.7942)], crs="EPSG:4326")
+
+fig, ax = plt.subplots(figsize=(10,6))
+world.plot(ax=ax, edgecolor="black", linewidth=0.3)
+brasilia.plot(ax=ax, color="red", markersize=40)
+ax.set_title("Mapa Mundial + Brasília"); plt.show()
+```
+```{python}
+sa = world[world["continent"]=="South America"].copy()
+col = "gdp_md_est"; br = sa[sa["name"]=="Brazil"].to_crs("EPSG:4326")
+fig, ax = plt.subplots(figsize=(10,6))
+sa.plot(column=col, legend=True, ax=ax, edgecolor="black", linewidth=0.4)
+br.boundary.plot(ax=ax, color="red", linewidth=1.5)
+ax.set_title("Coropleta América do Sul — Destaque Brasil"); plt.show()
+```
+
+## 2.9 Geo — Paraíba (municípios, geobr)
+```{python}
+import geobr, geopandas as gpd, matplotlib.pyplot as plt, numpy as np
+pb_mun = geobr.read_municipality(code_muni="PB", year=2020)
+fig, ax = plt.subplots(figsize=(8,8))
+pb_mun.plot(ax=ax, edgecolor="black", linewidth=0.4, facecolor="lightblue")
+ax.set_title("Municípios da Paraíba (IBGE via geobr)"); plt.show()
+
+pb_mun["pop_simulada"] = np.random.randint(5,200, size=len(pb_mun))
+fig, ax = plt.subplots(figsize=(8,8))
+pb_mun.plot(column="pop_simulada", cmap="viridis", legend=True, ax=ax, edgecolor="black", linewidth=0.2)
+ax.set_title("População Simulada — Municípios da Paraíba"); plt.show()
+```
+
+## 2.10 Violin / 2.11 Heatmap / 2.12 Hexbin / 2.13 KDE2D
+```{python}
+import seaborn as sns, matplotlib.pyplot as plt, numpy as np
+fig, ax = plt.subplots(figsize=(8,4))
+sns.violinplot(data=iris, x="species", y="petal_length", ax=ax, inner="quartile"); ax.set_title("Violin — Iris"); plt.show()
+
+num_cols = iris.select_dtypes(include=[np.number]); corr = num_cols.corr()
+fig, ax = plt.subplots(figsize=(6,5)); im = ax.imshow(corr); ax.set_title("Matriz de Correlação"); plt.tight_layout(); plt.show()
+
+xv = iris["sepal_length"].to_numpy(); yv = iris["petal_length"].to_numpy()
+fig, ax = plt.subplots(figsize=(6,5)); hb = ax.hexbin(xv,yv,gridsize=25); ax.set_title("Hexbin"); plt.show()
+
+fig, ax = plt.subplots(figsize=(6,5))
+sns.kdeplot(data=iris, x="sepal_length", y="sepal_width", fill=True, thresh=0.05, levels=100, ax=ax)
+ax.set_title("KDE 2D"); plt.show()
+```
+
+# 3. Parte 2 — Numba (Monte Carlo π)
+```{python}
+import time, numpy as np
+def mc_pi_numpy(n:int, seed:int=123):
+    rng = np.random.default_rng(seed); x=rng.random(n); y=rng.random(n)
+    return 4.0 * ((x*x + y*y) <= 1.0).mean()
+
+N=5_000_000; t0=time.time(); pi_py=mc_pi_numpy(N); t1=time.time()
+print(f"π (Python/Numpy): {pi_py:.8f}"); print(f"Tempo (Python/Numpy): {t1-t0:.3f} s")
+```
+```{python}
+import numba as nb, numpy as np, time
+@nb.njit(fastmath=True, parallel=True)
+def mc_pi_numba(n:int=5_000_000, seed:int=123):
+    rng = np.random; rng.seed(seed); inside=0
+    for i in nb.prange(n):
+        x=rng.random(); y=rng.random()
+        if x*x + y*y <= 1.0: inside += 1
+    return 4.0 * (inside/n)
+
+t0=time.time(); pi_nb=mc_pi_numba(); t1=time.time()
+print(f"π (Numba): {pi_nb:.8f}"); print(f"Tempo (Numba): {t1-t0:.3f} s")
+```
+
+# 4. Conclusão
+- Cobrimos ampla variedade de gráficos com Matplotlib e contraste com Plotnine.  
+- Aceleração com Numba em Monte Carlo.  
+- Mapas globais (Natural Earth) e regionais (Paraíba/IBGE via geobr).
+
+# 5. Referências
+- Matplotlib, Seaborn, Plotnine, Numba, GeoPandas, geobr, Natural Earth, McKinney (2017).

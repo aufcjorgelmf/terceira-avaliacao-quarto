@@ -1,0 +1,517 @@
+---
+title: "Terceira Avaliação — Introdução aos Softwares Estatísticos"
+author: "Jorge Luiz de Moraes Fonseca"
+date: "2025-10-05"
+lang: pt-BR
+format:
+  html:
+    toc: true                 # Gera o sumário automático
+    toc-title: "Sumário"      # Título do sumário
+    number-sections: true     # Numera as seções
+    theme: flatly             # Tema visual moderno
+    css: styles.css           # Arquivo de estilo (recuo e justificação)
+bibliography: "./referencias.bib"
+csl: associacao-brasileira-de-normas-tecnicas-ufrgs.csl
+link-citations: true
+---
+
+
+---
+
+
+
+## Introdução
+
+O presente trabalho tem como objetivo demonstrar, de forma abreviada e direta,a uma o uso das bibliotecas **Matplotlib** e **Plotnine** na visualização de dados, sendo ambas Bibliotecas construídas com bibliotecas em Python; a duas, demonstrar, de forma objetiva e direta, o emprego da biblioteca **Numba**, destinada à aceleração de cálculos computacionais.
+
+De fato, não é propósito do presente documento explorar, de forma exaustiva o uso das ferramentas apresentadas, mas servir de introdução sumária e objetiva do uso das ferramentas, principalmente no manuseio de dados, transmitindo ao destinatário da informação a ideia central dos achados decorrente do tratamento de dados. 
+
+---
+## Porque usar Gráficos e não Textos?
+
+### A finalidade da apresentação de gráficos para a transmissão de informação
+
+A visualização de dados é uma etapa fundamental no processo de análise estatística e científica. Por meio dela, informações complexas podem ser traduzidas em representações gráficas intuitivas, facilitando a compreensão de padrões, tendências e relações entre variáveis. Gráficos bem construídos são capazes de comunicar ideias com clareza e precisão, sendo amplamente utilizados em áreas como estatística, economia, epidemiologia e ciências sociais [@tufte1997visual].
+
+A escolha adequada do tipo de gráfico depende do objetivo da análise e das características dos dados. Um gráfico de barras pode evidenciar comparações entre categorias; um histograma revela a distribuição de frequências; e gráficos de dispersão são ideais para visualizar relações entre variáveis contínuas. Assim, a visualização estatística não apenas ilustra resultados, mas constitui uma forma de raciocínio científico e tomada de decisão baseada em evidências [@mckinney2022python].
+
+
+## Plotagem de Gráficos em Python
+
+### A história e as peculiaridades da biblioteca Matplotlib
+
+A biblioteca **Matplotlib** foi criada por **John D. Hunter** em 2003 com o propósito de fornecer aos cientistas e engenheiros uma ferramenta poderosa para a criação de gráficos em 2D no ambiente Python [@hunter2007matplotlib]. Originalmente, Hunter buscava uma solução para reproduzir, em Python, a flexibilidade de visualização oferecida pelo MATLAB, de onde vem o nome “Matplotlib”. Essa biblioteca tornou-se o alicerce da visualização científica em Python, servindo de base para outras bibliotecas como Seaborn e Plotnine.
+
+Uma das peculiaridades mais notáveis do Matplotlib é sua versatilidade: permite desde a criação de gráficos simples — como linhas e barras — até visualizações altamente customizadas e interativas. Por meio de seu módulo `pyplot`, a biblioteca oferece uma interface intuitiva, enquanto o uso direto de objetos (`Figure` e `Axes`) possibilita controle total sobre cada elemento visual. Além disso, o Matplotlib suporta exportação em múltiplos formatos (PNG, SVG, PDF), integração com Jupyter Notebooks e até renderização em ambientes 3D.
+
+Curiosamente, Hunter desenvolveu o Matplotlib enquanto trabalhava em estudos de neuroimagem no Laboratório de Neurologia de Chicago, e seu objetivo inicial era apenas plotar sinais cerebrais de eletroencefalografia (EEG). O sucesso da ferramenta fez com que rapidamente fosse adotada pela comunidade científica, tornando-se uma das bibliotecas mais importantes do ecossistema Python [@pythondocs].
+
+Com o tempo, a Matplotlib evoluiu para abranger todo o ecossistema Python, tornando-se a base para outras bibliotecas como Seaborn, Pandas Plotting e Plotnine. Sua estrutura modular permite a criação de uma ampla variedade de gráficos — desde os mais simples, como gráficos de linhas, barras, dispersão e histogramas, até representações mais sofisticadas, como gráficos 3D, mapas de calor e figuras compostas. 
+
+A principal vantagem da Matplotlib está em sua flexibilidade: praticamente qualquer elemento visual (cor, rótulo, estilo de linha, escala ou legenda) pode ser ajustado, o que a torna indispensável em aplicações científicas, financeiras e de engenharia.
+
+### Exemplo com `matplotlib` — Gráfico de Linhas
+```{python}
+import matplotlib.pyplot as plt
+import numpy as np
+
+x = np.linspace(0, 10, 100)
+y = np.sin(x)
+
+plt.plot(x, y, label="Seno(x)")
+plt.title("Gráfico de Linha - Matplotlib")
+plt.xlabel("x")
+plt.ylabel("y")
+plt.legend()
+plt.show()
+```
+
+### Gráfico de Barras
+```{python}
+import matplotlib.pyplot as plt
+import numpy as np
+
+
+categorias = ["A", "B", "C", "D"]
+valores = [23, 17, 35, 29]
+plt.bar(categorias, valores, color="teal")
+plt.title("Gráfico de Barras")
+plt.show()
+
+```
+
+### Histograma
+```{python}
+import matplotlib.pyplot as plt
+import numpy as np
+
+
+dados = np.random.randn(200)
+plt.hist(dados, bins=20, color="orange", edgecolor="black")
+plt.title("Histograma de Dados Aleatórios")
+plt.show()
+
+```
+### Boxplot e Pizza
+```{python}
+import matplotlib.pyplot as plt
+import numpy as np
+
+dados = [np.random.randn(50) + i for i in range(4)]
+plt.boxplot(dados)
+plt.title("Boxplot Exemplo")
+plt.show()
+
+valores = [30, 25, 15, 10, 20]
+rotulos = ["A", "B", "C", "D", "E"]
+plt.pie(valores, labels=rotulos, autopct="%1.1f%%")
+plt.title("Gráfico de Pizza")
+plt.show()
+```
+
+## A biblioteca Plotnine: fundamentos, criação e peculiaridades de uso
+
+A biblioteca Plotnine é uma implementação em Python do conceito de grammar of graphics — uma “gramática dos gráficos” proposta por Leland Wilkinson em sua obra de 1999. Essa abordagem teórica revolucionou a forma de pensar a visualização de dados: em vez de criar gráficos prontos, o usuário passa a construí-los por camadas, definindo gradualmente variáveis estéticas, escalas, geometrias e temas. Assim, a Plotnine não é apenas uma ferramenta de plotagem, mas um sistema declarativo, no qual o pesquisador descreve “o que quer representar” e a biblioteca se encarrega de renderizar o gráfico correspondente.
+
+Criada por Hassan Kibirige, a Plotnine nasceu da intenção de levar para o ecossistema Python o poder expressivo do pacote ggplot2, do ambiente R, amplamente utilizado por estatísticos e cientistas de dados. A motivação era permitir que profissionais que já trabalhavam com análise em Python pudessem utilizar a mesma lógica semântica de construção de gráficos — baseada em estética, mapeamento e camadas — sem precisar migrar de linguagem. Em termos práticos, a Plotnine une o rigor analítico de Python à clareza gráfica da gramática de Wilkinson, promovendo um equilíbrio entre flexibilidade e expressividade visual.
+
+Uma curiosidade pouco comentada é que, embora a Plotnine reproduza fielmente a filosofia do ggplot2, ela foi projetada para funcionar sobre estruturas de dados Pandas DataFrames, o que permite sua integração direta com bibliotecas como NumPy, Scikit-learn e Statsmodels. Além disso, por ser desenvolvida em torno da biblioteca Matplotlib, cada gráfico gerado pela Plotnine pode ser exportado, manipulado ou refinado utilizando os mesmos recursos de baixo nível do Matplotlib — uma vantagem rara entre as ferramentas de visualização.
+
+Outro detalhe interessante é que a Plotnine tem uma curva de aprendizado mais conceitual que sintática: dominar sua “gramática” leva o usuário a compreender os princípios fundamentais da representação visual, e não apenas a reproduzir gráficos prontos. Isso explica por que ela é amplamente adotada em projetos de ensino, pesquisa acadêmica e relatórios de modelagem estatística, nos quais a consistência visual e a clareza dos resultados são essenciais.
+
+### Comparação entre o Matplotlib e o Plotnine (mesmos dados)
+
+Abaixo, comparamos um **dispersão de `displ` × `hwy`** colorido por `class`.  
+No **Matplotlib**, construímos manualmente a figura, e ajustamos uma **reta de regressão global** com `numpy.polyfit`.  
+No **Plotnine**, fazemos a mesma especificação de mapeamentos estéticos e adicionamos `geom_smooth(method="lm")`.
+
+### Apresentação no Matplotlib
+```{python}
+#| fig-cap: "Dispersão displ × hwy por class — Matplotlib"
+#| fig-width: 8
+import numpy as np
+import pandas as pd
+import matplotlib.pyplot as plt
+from plotnine.data import mpg  # apenas para obter os mesmos dados
+
+# Garante um DataFrame pandas
+df = pd.DataFrame(mpg)
+
+fig, ax = plt.subplots()
+
+# Dispersão por classe (uma cor por classe)
+classes = df['class'].unique()
+for c in classes:
+    sub = df[df['class'] == c]
+    ax.scatter(sub['displ'], sub['hwy'], label=c, alpha=0.7)
+
+# Regressão linear global (uma única reta)
+x = df['displ'].to_numpy()
+y = df['hwy'].to_numpy()
+coef = np.polyfit(x, y, deg=1)          # y = a*x + b
+x_line = np.linspace(x.min(), x.max(), 200)
+y_line = coef[0]*x_line + coef[1]
+ax.plot(x_line, y_line, linewidth=2)
+
+ax.set_xlabel("displ")
+ax.set_ylabel("hwy")
+ax.set_title("Matplotlib: dispersão + reta de regressão global")
+ax.legend(title="class", bbox_to_anchor=(1.02, 1), loc="upper left")
+plt.tight_layout()
+plt.show()
+```
+
+### Apresentação no Plotnine
+```{python}
+#| fig-cap: "Dispersão displ × hwy por class — Plotnine"
+#| fig-width: 8
+from plotnine import ggplot, aes, geom_point, geom_smooth, labs, theme_minimal
+from plotnine.data import mpg
+
+p = (
+    ggplot(mpg, aes(x="displ", y="hwy", color="class"))
+    + geom_point(alpha=0.7)
+    + geom_smooth(method="lm")  # reta de regressão (por padrão, global)
+    + labs(x="displ", y="hwy", title="Plotnine: dispersão + regressão (grammar of graphics)")
+    + theme_minimal()
+)
+p  # importante: deixar 'p' como última expressão para exibir o gráfico no Quarto
+```
+
+Da análise dos gráficos apresentados, observa-se que o Plotnine acrescenta automaticamente uma linha de regressão ajustada (geom_smooth(method="lm")), acompanhada de intervalos de confiança (gerados por padrão a 95%). Isso amplia a leitura estatística do gráfico, pois não apenas mostra a relação entre displ (cilindrada do motor) e hwy (consumo em estrada), mas também comunica o grau de incerteza e tendência média dessa relação. Tais elementos — tendência central, dispersão e confiança — são fundamentais em análise exploratória de dados e oferecem uma visão mais completa e inferencial do fenômeno, algo que o Matplotlib, por sua natureza mais manual, não insere automaticamente.
+
+Além disso, o Plotnine simplifica a comparação de múltiplas categorias (neste caso, as classes de veículos) por meio do mapeamento de cor associado à variável class, sem exigir laços de iteração. Essa sintaxe de alto nível não apenas reduz o código, como reforça a consistência estatística e visual do resultado, tornando o gráfico simultaneamente mais informativo e mais reprodutível — dois princípios basilares da ciência de dados moderna.
+
+## Uso da Biblioteca Numba
+
+### A biblioteca Numba: aceleração computacional e curiosidades sobre sua criação
+
+A biblioteca **Numba** surgiu como uma iniciativa do projeto **NumFOCUS** e foi desenvolvida por Siu Kwan Lam, Antoine Pitrou e Stanley Seibert [@numba2023]. Seu propósito é acelerar o código Python por meio da compilação **Just-In-Time (JIT)**, convertendo funções escritas em Python puro para código de máquina altamente otimizado. Isso é feito através da integração com o compilador **LLVM**, permitindo que operações matemáticas e científicas sejam executadas com desempenho próximo ao de linguagens compiladas, como C ou Fortran.
+
+Seu primeiro lançamento ocorreu em 2012, com o objetivo de permitir que pesquisadores e analistas pudessem acelerar trechos críticos de código Python sem precisar reescrever algoritmos em linguagens de baixo nível.
+
+O nome “Numba” é uma referência direta ao termo “number” (número, em inglês), refletindo o foco da biblioteca em operações numéricas e científicas. Uma curiosidade interessante é que ela consegue, muitas vezes, acelerar códigos sem necessidade de modificações substanciais — bastando adicionar o decorador `@njit` antes das funções. Essa simplicidade de uso fez da Numba uma ferramenta amplamente empregada em contextos de **ciência de dados**, **aprendizado de máquina** e **simulações Monte Carlo**, onde a velocidade de processamento é crítica.
+
+A Numba representa um elo entre o desempenho de linguagens de baixo nível e a produtividade do Python, consolidando-se como uma das principais ferramentas para otimização computacional em aplicações científicas [@mckinney2022python; @montecarlo].
+
+
+```{python}
+import matplotlib.pyplot as plt
+import numpy as np
+import random, time
+
+def monte_carlo_pi(n=10_000_000):
+    dentro = 0
+    for _ in range(n):
+        x, y = random.random(), random.random()
+        if x*x + y*y <= 1:
+            dentro += 1
+    return (4 * dentro) / n
+
+inicio = time.time()
+pi_est = monte_carlo_pi()
+print(f"π ≈ {pi_est:.6f} (Tempo: {time.time() - inicio:.3f}s)")
+```
+
+### Versão otimizada com numba
+```{python}
+import matplotlib.pyplot as plt
+import numpy as np
+import random, time
+
+from numba import njit
+
+@njit
+def monte_carlo_pi_numba(n=10_000_000):
+    dentro = 0
+    for i in range(n):
+        x, y = random.random(), random.random()
+        if x*x + y*y <= 1:
+            dentro += 1
+    return (4 * dentro) / n
+
+inicio = time.time()
+pi_est = monte_carlo_pi_numba()
+print(f"π ≈ {pi_est:.6f} (Tempo: {time.time() - inicio:.3f}s)")
+
+```
+
+### Mais um exemplo: Python Puro X Numpy X Numba
+Como mais um exemplo da vantagem em utilizar bibliotecas especializadas construídas em Python, realizaremos o seguinte experimento:
+ - implementação do Monte Carlo de π em três variantes: Python puro, NumPy vetorizado e Numba JIT;
+ - medições de tempo e erro absoluto (|π̂ − π|);
+ - gráfico parcial de pontos do método;
+ - comparação visual de desempenho (barras) e evolução do erro (linhas); e
+ - versões de visualização em Matplotlib e em Plotnine. 
+
+#### Código-base e utilidades
+```{python}
+#| label: setup-monte-carlo
+#| echo: true
+#| message: false
+#| warning: false
+import math, time, random
+import numpy as np
+import pandas as pd
+
+# Tentar carregar Numba (se não houver, seguimos sem ela)
+try:
+    from numba import njit, prange
+    HAS_NUMBA = True
+except Exception as e:
+    HAS_NUMBA = False
+
+# Semente para reprodutibilidade
+SEED = 42
+random.seed(SEED)
+np.random.seed(SEED)
+
+def timer(fn, *args, repeat=1, **kwargs):
+    """Mede tempo de execução e retorna (resultado, tempo_em_segundos)."""
+    best = float("inf")
+    last_res = None
+    for _ in range(repeat):
+        t0 = time.perf_counter()
+        res = fn(*args, **kwargs)
+        dt = time.perf_counter() - t0
+        if dt < best:
+            best = dt
+            last_res = res
+    return last_res, best
+
+```
+
+#### Implementações em Python Puro (loop)
+```{python}
+#| label: pi-python-puro
+def pi_python_puro(n: int = 2_000_000, seed: int = SEED):
+    random.seed(seed)
+    dentro = 0
+    for _ in range(n):
+        x = random.random()
+        y = random.random()
+        if x*x + y*y <= 1.0:
+            dentro += 1
+    return 4.0 * dentro / n
+```
+
+#### Numpy vetorizado
+```{python}
+#| label: pi-numpy
+def pi_numpy(n: int = 2_000_000, seed: int = SEED, batch: int = 500_000):
+    """
+    Gera pontos em lotes para evitar picos de memória em N grandes.
+    """
+    rng = np.random.default_rng(seed)
+    dentro = 0
+    rest = n
+    while rest > 0:
+        m = min(batch, rest)
+        x = rng.random(m)
+        y = rng.random(m)
+        dentro += np.count_nonzero(x*x + y*y <= 1.0)
+        rest -= m
+    return 4.0 * dentro / n
+```
+
+### Numba JIT (loop acelerado)
+```{python}
+#| label: pi-numba
+if HAS_NUMBA:
+    @njit(fastmath=True)
+    def _rand01(state):
+        # simples LCG para evitar custo do np.random dentro do JIT
+        # (opcional; poderíamos usar np.random.random() também)
+        a = 1664525
+        c = 1013904223
+        m = 2**32
+        state = (a * state + c) % m
+        return state, (state / m)
+
+    @njit(parallel=True, fastmath=True)
+    def _pi_numba_core(n, seed):
+        dentro = 0
+        state = seed
+        for i in prange(n):
+            state, x = _rand01(state + i + 1)
+            state, y = _rand01(state + i + 12345)
+            if x*x + y*y <= 1.0:
+                dentro += 1
+        return 4.0 * dentro / n
+
+    def pi_numba(n: int = 2_000_000, seed: int = SEED):
+        return _pi_numba_core(n, seed)
+else:
+    def pi_numba(*args, **kwargs):
+        raise RuntimeError("Numba não disponível neste ambiente.")
+
+```
+
+#### Execução, Tempos e Erro Absoluto
+```{python}
+#| label: run-benchmarks
+#| echo: true
+#| results: hold
+N_PEQUENO = 20_000      # para gráficos de pontos (amostragem)
+N_GRANDE  = 500_000    # para tempos e erro
+
+resultados = []
+
+# Python puro
+pi_hat, t = timer(pi_python_puro, N_GRANDE, repeat=1)
+resultados.append({"método": "Python puro", "pi_hat": pi_hat, "tempo_s": t, "erro_abs": abs(pi_hat - math.pi)})
+
+# NumPy
+pi_hat, t = timer(pi_numpy, N_GRANDE, repeat=1)
+resultados.append({"método": "NumPy", "pi_hat": pi_hat, "tempo_s": t, "erro_abs": abs(pi_hat - math.pi)})
+
+# Numba
+if HAS_NUMBA:
+    # primeira chamada faz o "warmup" da compilação JIT; medimos a segunda
+    _ = pi_numba(100_000)
+    pi_hat, t = timer(pi_numba, N_GRANDE, repeat=1)
+    resultados.append({"método": "Numba (JIT)", "pi_hat": pi_hat, "tempo_s": t, "erro_abs": abs(pi_hat - math.pi)})
+
+df_bench = pd.DataFrame(resultados).sort_values("tempo_s", ascending=True).reset_index(drop=True)
+df_bench
+
+```
+
+### Visualizações
+
+#### Dispersão dos Pontos (Matplotlib)
+```{python}
+#| label: scatter-mpl
+#| fig-cap: "Amostra de pontos no quadrado unitário (Matplotlib)"
+#| fig-width: 7
+#| message: false
+import matplotlib.pyplot as plt
+
+# Amostra de pontos para visualização (para não pesar)
+rng = np.random.default_rng(SEED)
+m = N_PEQUENO
+xs = rng.random(m)
+ys = rng.random(m)
+mask = xs*xs + ys*ys <= 1.0
+
+fig, ax = plt.subplots()
+ax.scatter(xs[~mask], ys[~mask], s=5, alpha=0.5)
+ax.scatter(xs[mask], ys[mask], s=5, alpha=0.5)
+# Desenha o arco de círculo x^2 + y^2 = 1 no 1º quadrante
+ang = np.linspace(0, np.pi/2, 400)
+ax.plot(np.cos(ang), np.sin(ang), linewidth=2)
+
+ax.set_aspect("equal", adjustable="box")
+ax.set_xlabel("x"); ax.set_ylabel("y")
+ax.set_title("Monte Carlo de π: pontos dentro/fora do quarto de círculo")
+plt.tight_layout()
+plt.show()
+
+```
+
+#### Dispersão dos Pontos (Plotnine)
+```{python}
+#| label: scatter-plotnine
+#| fig-cap: "Amostra de pontos no quadrado unitário (Plotnine)"
+#| fig-width: 7
+from plotnine import ggplot, aes, geom_point, labs, coord_fixed, theme_minimal
+import pandas as pd
+
+df_pts = pd.DataFrame({"x": xs, "y": ys, "dentro": np.where(mask, "dentro", "fora")})
+
+p = (
+    ggplot(df_pts.sample(min(30_000, len(df_pts)), random_state=SEED), aes("x", "y", color="dentro"))
+    + geom_point(alpha=0.5, size=1.2)
+    + coord_fixed()
+    + labs(title="Monte Carlo de π: pontos dentro/fora do quarto de círculo",
+           x="x", y="y")
+    + theme_minimal()
+)
+p
+```
+
+#### Comparação de Desempenho (Matplotlib)
+```{python}
+#| label: bars-mpl
+#| fig-cap: "Comparação de tempo (s) por método — Matplotlib"
+#| fig-width: 7
+import matplotlib.pyplot as plt
+
+fig, ax = plt.subplots()
+ax.barh(df_bench["método"], df_bench["tempo_s"])
+for i, v in enumerate(df_bench["tempo_s"]):
+    ax.text(v, i, f"{v:.3f}s", va="center", ha="left")
+ax.set_xlabel("Tempo (s)")
+ax.set_title(f"Tempo para N = {N_GRANDE:,}".replace(",", "."))
+plt.tight_layout()
+plt.show()
+```
+
+#### Comparação de Desempenho (Plotnine)
+```{python}
+#| label: bars-plotnine
+#| fig-cap: "Comparação de tempo (s) por método — Plotnine"
+#| fig-width: 7
+from plotnine import geom_col, theme, element_text
+
+p_bench = (
+    ggplot(df_bench, aes(x="método", y="tempo_s"))
+    + geom_col()
+    + labs(x="Método", y="Tempo (s)", title=f"Tempo para N = {N_GRANDE:,}".replace(",", "."))
+    + theme(axis_text_x=element_text(rotation=15, ha="right"))
+)
+p_bench
+
+```
+
+#### Evolução do erro com N (log10 do erro)
+```{python}
+#| label: erro-por-N
+#| fig-cap: "Erro absoluto |π̂ − π| em função de N (escala log10) — Matplotlib"
+#| fig-width: 7
+def sweep_errors(ns=(10_000, 50_000, 100_000, 200_000, 500_000), seed=SEED):
+    rows = []
+    for n in ns:
+        # Python puro (rápido o suficiente nesses Ns)
+        pi_hat = pi_python_puro(n, seed=seed)
+        rows.append(("Python puro", n, abs(pi_hat - math.pi)))
+        # NumPy
+        pi_hat = pi_numpy(n, seed=seed)
+        rows.append(("NumPy", n, abs(pi_hat - math.pi)))
+        # Numba (se disponível)
+        if HAS_NUMBA:
+            _ = pi_numba(50_000)  # warmup
+            pi_hat = pi_numba(n, seed=seed)
+            rows.append(("Numba (JIT)", n, abs(pi_hat - math.pi)))
+    return pd.DataFrame(rows, columns=["método", "N", "erro_abs"])
+
+df_err = sweep_errors()
+import matplotlib.pyplot as plt
+fig, ax = plt.subplots()
+for metodo, sub in df_err.groupby("método"):
+    ax.plot(sub["N"], sub["erro_abs"], marker="o", label=metodo)
+ax.set_xscale("log")
+ax.set_yscale("log")
+ax.set_xlabel("N (log)")
+ax.set_ylabel("|π̂ − π| (log)")
+ax.set_title("Convergência do erro com N")
+ax.legend()
+plt.tight_layout()
+plt.show()
+```
+
+### Comparações
+#### Python puro mede o custo de laços e random.random() em alto nível;
+#### NumPy amortiza custo gerando vetores em lote e conta pontos com operações vetorizadas;
+#### Numba compila o loop para código nativo (JIT). A primeira chamada compila; por isso aquecemos com um “warmup” antes de medir.
+
+
+## Conclusão
+
+A visualização de dados e a otimização de desempenho são dois pilares fundamentais da Ciência de Dados moderna. No contexto do ecossistema Python, bibliotecas como Matplotlib, Plotnine e Numba representam a integração perfeita entre clareza informacional e eficiência computacional. Enquanto as duas primeiras transformam dados complexos em representações gráficas acessíveis e interpretáveis, a Numba atua nos bastidores, garantindo que cálculos intensivos sejam executados com rapidez e precisão.
+
+A Matplotlib se destaca por sua versatilidade e controle minucioso dos elementos visuais, oferecendo uma ampla gama de opções de customização que a tornam ideal para gráficos técnicos, científicos e acadêmicos. Já a Plotnine, ao adotar a lógica declarativa do grammar of graphics, proporciona uma forma mais conceitual e sistemática de representar relações entre variáveis, valorizando a consistência e a expressividade visual dos dados. Ambas demonstram que a visualização não é apenas um complemento estético, mas uma etapa analítica indispensável — capaz de revelar padrões e evidências que frequentemente escapam à leitura tabular.
+
+A Numba, por sua vez, reforça o poder do Python como ferramenta científica ao permitir que funções matemáticas e estatísticas sejam compiladas e executadas com desempenho comparável ao de linguagens tradicionais de alto rendimento. Essa capacidade é especialmente útil em experimentos que envolvem simulações Monte Carlo, análise de grandes amostras, regressões não lineares ou estimativas bayesianas, onde a performance pode ser determinante para a viabilidade do estudo.
+
+Em conjunto, essas bibliotecas demonstram a maturidade do ecossistema Python na área de análise e visualização de dados: ele não apenas permite compreender o mundo por meio dos números, mas também o faz com velocidade, clareza e rigor científico. O domínio dessas ferramentas capacita o profissional a transformar dados brutos em conhecimento estratégico, com aplicações que vão desde a pesquisa acadêmica até a auditoria pública, a economia e a engenharia. Em suma, a combinação entre visualização expressiva e otimização de desempenho constitui um elo essencial entre a análise teórica e a tomada de decisão baseada em evidências.
